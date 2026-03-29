@@ -69,8 +69,7 @@ async function handleEvent(event: Stripe.Event) {
     return;
   }
 
-  // for one time payments, we only listen for the checkout.session.completed event
-  if (event.type === 'payment_intent.succeeded' && event.data.object.invoice === null) {
+  if (event.type === 'payment_intent.succeeded') {
     return;
   }
 
@@ -96,6 +95,7 @@ async function handleEvent(event: Stripe.Event) {
       await syncCustomerFromStripe(customerId);
     } else if (mode === 'payment' && payment_status === 'paid') {
       try {
+        const session = stripeData as Stripe.Checkout.Session;
         const {
           id: checkout_session_id,
           payment_intent,
@@ -103,7 +103,20 @@ async function handleEvent(event: Stripe.Event) {
           amount_total,
           currency,
           metadata: sessionMetadata,
-        } = stripeData as Stripe.Checkout.Session;
+        } = session;
+
+        let receipt_url: string | null = null;
+        try {
+          if (payment_intent && typeof payment_intent === 'string') {
+            const pi = await stripe.paymentIntents.retrieve(payment_intent, {
+              expand: ['latest_charge'],
+            });
+            const charge = pi.latest_charge as Stripe.Charge | null;
+            receipt_url = charge?.receipt_url ?? null;
+          }
+        } catch (receiptErr) {
+          console.warn('[stripe-webhook] Could not retrieve receipt_url:', receiptErr);
+        }
 
         console.info(`[stripe-webhook] Processing one-time payment — session: ${checkout_session_id}, payment_intent: ${payment_intent}`);
         console.info(`[stripe-webhook] Session metadata:`, JSON.stringify(sessionMetadata));
@@ -138,6 +151,7 @@ async function handleEvent(event: Stripe.Event) {
               listing_id,
               payment_intent_id: typeof payment_intent === 'string' ? payment_intent : String(payment_intent),
               amount_paid: amount_total ?? 299,
+              receipt_url,
             })
             .select()
             .maybeSingle();

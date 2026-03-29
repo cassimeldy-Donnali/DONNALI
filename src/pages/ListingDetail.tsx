@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, MapPin, Package, Euro, User, Phone, Mail, Lock, CreditCard } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Package, Euro, User, Phone, Mail, Lock, PackageCheck, Flag, Share2, Check, AlertTriangle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import { STRIPE_PRODUCTS } from '../stripe-config';
+import { TransactionCodeCard } from '../components/transactions/TransactionCodeCard';
+import { ValidateTransactionModal } from '../components/transactions/ValidateTransactionModal';
+import { ReportModal } from '../components/reports/ReportModal';
+import { useMetaTags } from '../hooks/useMetaTags';
+import type { TransactionArchive } from '../lib/transactions';
 
 interface Listing {
   id: string;
@@ -17,6 +22,7 @@ interface Listing {
   phone: string;
   contact_email: string;
   user_id: string;
+  is_active: boolean;
   profiles: {
     full_name: string;
     avatar_url?: string;
@@ -32,6 +38,24 @@ export function ListingDetail() {
   const [checkingUnlock, setCheckingUnlock] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentError, setPaymentError] = useState('');
+  const [showValidateModal, setShowValidateModal] = useState(false);
+  const [validatedArchive, setValidatedArchive] = useState<TransactionArchive | null>(null);
+  const [travelerId, setTravelerId] = useState<string | null>(null);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share && listing) {
+      try {
+        await navigator.share({ title: `Trajet ${listing.departure} → ${listing.destination}`, url });
+        return;
+      } catch { }
+    }
+    await navigator.clipboard.writeText(url);
+    setShareCopied(true);
+    setTimeout(() => setShareCopied(false), 2000);
+  };
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -74,6 +98,29 @@ export function ListingDetail() {
 
     checkUnlockedContact();
   }, [user, id]);
+
+  useEffect(() => {
+    if (listing) {
+      setTravelerId(listing.user_id);
+    }
+  }, [listing]);
+
+  const PLACE_LABELS: Record<string, string> = {
+    reunion: 'La Reunion',
+    mayotte: 'Mayotte',
+    paris: 'Paris',
+  };
+
+  useMetaTags(
+    listing
+      ? {
+          title: `Trajet ${PLACE_LABELS[listing.departure] ?? listing.departure} → ${PLACE_LABELS[listing.destination] ?? listing.destination} - ${listing.kilos_available} kg disponibles`,
+          description: `${listing.kilos_available} kg disponibles au prix de ${listing.price_per_kilo} €/kg. Vol le ${new Date(listing.flight_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}.${listing.description ? ' ' + listing.description : ''}`,
+          url: window.location.href,
+          type: 'article',
+        }
+      : {}
+  );
 
   const handleCheckout = async () => {
     if (!user || !listing) return;
@@ -172,15 +219,47 @@ export function ListingDetail() {
     : 'Voyageur';
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Retour à l'accueil
-        </Link>
+        <div className="flex items-center justify-between mb-6">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Retour à l'accueil
+          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleShare}
+              className={`inline-flex items-center gap-1.5 text-xs transition-colors px-3 py-1.5 rounded-lg font-medium ${
+                shareCopied
+                  ? 'text-eco-600 bg-eco-50'
+                  : 'text-gray-500 hover:text-ocean-600 hover:bg-ocean-50'
+              }`}
+            >
+              {shareCopied ? <Check className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
+              {shareCopied ? 'Lien copié !' : 'Partager'}
+            </button>
+            {user && !isOwner && (
+              <button
+                onClick={() => setShowReportModal(true)}
+                className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-500 transition-colors px-3 py-1.5 rounded-lg hover:bg-red-50"
+              >
+                <Flag className="w-3.5 h-3.5" />
+                Signaler
+              </button>
+            )}
+          </div>
+        </div>
+
+        {!listing.is_active && (
+          <div className="mb-4 flex items-center gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm">
+            <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+            <span>Cette annonce est expiree. Le vol est passe, mais vous pouvez toujours retrouver les coordonnees ci-dessous car vous avez debloque ce contact.</span>
+          </div>
+        )}
 
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
@@ -271,6 +350,43 @@ export function ListingDetail() {
                   {hasUnlockedContact && (
                     <p className="text-sm text-green-600 font-medium">Contact débloqué</p>
                   )}
+
+                  {hasUnlockedContact && !isOwner && user && travelerId && (
+                    <div className="border-t border-gray-100 pt-4 mt-4">
+                      <p className="text-xs text-gray-500 mb-3">
+                        Générez un code et communiquez-le au voyageur lors de la remise du colis.
+                      </p>
+                      <TransactionCodeCard
+                        listingId={listing.id}
+                        senderId={user.id}
+                        travelerId={travelerId}
+                      />
+                    </div>
+                  )}
+
+                  {isOwner && user && (
+                    <div className="border-t border-gray-100 pt-4 mt-4">
+                      {validatedArchive ? (
+                        <div className="flex items-center gap-2 p-3 bg-eco-50 rounded-xl border border-eco-100">
+                          <PackageCheck className="w-5 h-5 text-eco-600" />
+                          <div>
+                            <p className="text-sm font-semibold text-eco-700">Remise confirmée</p>
+                            <p className="text-xs text-eco-600">
+                              Validée le {new Date(validatedArchive.validated_at).toLocaleString('fr-FR')}
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setShowValidateModal(true)}
+                          className="w-full flex items-center justify-center gap-2 py-3 bg-ocean-500 hover:bg-ocean-600 text-white font-semibold rounded-xl transition-colors text-sm"
+                        >
+                          <PackageCheck className="w-4 h-4" />
+                          Valider la remise du colis
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -285,7 +401,7 @@ export function ListingDetail() {
                     </div>
                   </div>
 
-                  {user && !isOwner && !checkingUnlock && (
+                  {user && !isOwner && !checkingUnlock && listing.is_active && (
                     <div className="border-t pt-4">
                       <p className="text-sm text-gray-600 mb-3">
                         Débloquez les informations de contact pour contacter ce voyageur
@@ -316,6 +432,15 @@ export function ListingDetail() {
                     </div>
                   )}
 
+                  {user && !isOwner && !checkingUnlock && !listing.is_active && (
+                    <div className="border-t pt-4">
+                      <p className="text-sm text-amber-700 flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                        Cette annonce est expiree et n'est plus disponible.
+                      </p>
+                    </div>
+                  )}
+
                   {!user && (
                     <div className="border-t pt-4">
                       <p className="text-sm text-gray-600">
@@ -330,5 +455,32 @@ export function ListingDetail() {
         </div>
       </div>
     </div>
+
+    {showValidateModal && isOwner && user && (
+      <ValidateTransactionModal
+        listing={{
+          ...listing,
+          profiles: undefined,
+        }}
+        travelerId={user.id}
+        onClose={() => setShowValidateModal(false)}
+        onValidated={(archive) => {
+          setValidatedArchive(archive);
+          setShowValidateModal(false);
+        }}
+      />
+    )}
+
+    {showReportModal && listing && (
+      <ReportModal
+        user={user}
+        reportedUserId={listing.user_id}
+        reportedListingId={listing.id}
+        reportedUserName={listing.profiles?.full_name}
+        onClose={() => setShowReportModal(false)}
+        onAuthRequired={() => setShowReportModal(false)}
+      />
+    )}
+    </>
   );
 }

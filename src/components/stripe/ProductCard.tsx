@@ -1,5 +1,5 @@
 import React from 'react'
-import { StripeProduct } from '../../stripe-config'
+import { StripeProduct, formatPrice } from '../../stripe-config'
 import { CheckoutButton } from './CheckoutButton'
 
 interface ProductCardProps {
@@ -22,7 +22,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
         
         <div className="flex items-center justify-between">
           <span className="text-2xl font-bold text-gray-900">
-            €2.99
+            {formatPrice(product.price, product.currency)}
           </span>
           <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
             {product.mode === 'payment' ? 'One-time' : 'Subscription'}

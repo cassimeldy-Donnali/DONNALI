@@ -16,16 +16,20 @@ export const useStripe = () => {
         throw new Error('You must be logged in to make a purchase');
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`, {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${session?.access_token}`,
           'Content-Type': 'application/json',
+          'Apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
         },
         body: JSON.stringify({
-          priceId,
-          successUrl: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancelUrl: window.location.href,
+          price_id: priceId,
+          success_url: `${window.location.origin}?payment=success`,
+          cancel_url: window.location.href,
+          mode: 'payment',
         }),
       });
 

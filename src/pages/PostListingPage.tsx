@@ -4,6 +4,7 @@ import {
   ShieldCheck, Clock, User, ArrowRight, Loader2, ExternalLink
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { moderateContent } from '../lib/contentModeration';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import type { City } from '../types';
 import { CITY_LABELS } from '../types';
@@ -65,6 +66,7 @@ export function PostListingPage({ user, onAuthRequired, onNavigate }: PostListin
   const [identitySessionId, setIdentitySessionId] = useState<string | null>(null);
   const [checkingStatus, setCheckingStatus] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
+  const [pollingTimedOut, setPollingTimedOut] = useState(false);
 
   const [checkingVerif, setCheckingVerif] = useState(true);
 
@@ -78,7 +80,11 @@ export function PostListingPage({ user, onAuthRequired, onNavigate }: PostListin
 
   useEffect(() => {
     if (!listingId || !identitySessionId) return;
+    setPollingTimedOut(false);
+    let attempts = 0;
+    const MAX_ATTEMPTS = 20;
     const interval = setInterval(async () => {
+      attempts++;
       const { data } = await supabase
         .from('listings')
         .select('is_published')
@@ -87,6 +93,9 @@ export function PostListingPage({ user, onAuthRequired, onNavigate }: PostListin
       if (data?.is_published) {
         setIsPublished(true);
         clearInterval(interval);
+      } else if (attempts >= MAX_ATTEMPTS) {
+        clearInterval(interval);
+        setPollingTimedOut(true);
       }
     }, 3000);
     return () => clearInterval(interval);
@@ -176,7 +185,7 @@ export function PostListingPage({ user, onAuthRequired, onNavigate }: PostListin
       return;
     }
     if (!disclaimerAccepted) {
-      setListingError("Vous devez accepter les conditions de non-responsabilité pour continuer.");
+      setListingError("Merci de confirmer que vous avez pris connaissance des règles de DONNALI.");
       return;
     }
     const cleanPhone = form.phone.replace(/[\s\-\.]/g, '');
@@ -184,8 +193,30 @@ export function PostListingPage({ user, onAuthRequired, onNavigate }: PostListin
       setListingError('Numéro de téléphone invalide (ex : 0692123456 ou +262692123456).');
       return;
     }
+    if (form.kilos_available && (parseInt(form.kilos_available) < 1 || parseInt(form.kilos_available) > 30)) {
+      setListingError('Le nombre de kilos disponibles doit être compris entre 1 et 30.');
+      return;
+    }
+    if (form.price_per_kilo && parseFloat(form.price_per_kilo) < 0) {
+      setListingError('Le prix par kilo ne peut pas être négatif.');
+      return;
+    }
+    if (form.description && form.description.length > 1000) {
+      setListingError('Votre message ne peut pas dépasser 1000 caractères.');
+      return;
+    }
 
     setListingLoading(true);
+
+    const textsToCheck = [form.description].filter(Boolean) as string[];
+    if (textsToCheck.length > 0) {
+      const moderation = await moderateContent(textsToCheck);
+      if (!moderation.allowed) {
+        setListingError(moderation.message || 'Contenu non autorisé détecté.');
+        setListingLoading(false);
+        return;
+      }
+    }
     try {
       const { data, error: insertError } = await supabase.from('listings').insert({
         user_id: user!.id,
@@ -500,7 +531,7 @@ export function PostListingPage({ user, onAuthRequired, onNavigate }: PostListin
               <div className="bg-ocean-50 border border-ocean-100 rounded-2xl p-4 flex gap-3">
                 <Info className="w-5 h-5 text-ocean-600 shrink-0 mt-0.5" />
                 <p className="text-ocean-700 text-sm">
-                  Vos coordonnées seront masquées et ne seront révélées qu'après un paiement de 2,99 EUR par l'expéditeur.
+                  Vos coordonnées restent masquées et protégées. L'expéditeur paie 2,99 EUR à DONNALI pour y accéder — ce montant revient à la plateforme et couvre la mise en relation.
                 </p>
               </div>
 
@@ -590,8 +621,12 @@ export function PostListingPage({ user, onAuthRequired, onNavigate }: PostListin
                         value={form.description}
                         onChange={(e) => { set('description', e.target.value); if (useDefaultDescription) setUseDefaultDescription(false); }}
                         rows={3}
+                        maxLength={1000}
                         className={`${inputClass} resize-none`}
                       />
+                      <p className={`text-right text-xs mt-1 ${form.description.length > 900 ? 'text-amber-600 font-semibold' : 'text-gray-400'}`}>
+                        {form.description.length}/1000
+                      </p>
                       <div className="mt-2.5 bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex gap-3">
                         <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                         <div>
@@ -632,24 +667,30 @@ export function PostListingPage({ user, onAuthRequired, onNavigate }: PostListin
                   <button
                     type="button"
                     onClick={() => setDisclaimerAccepted(!disclaimerAccepted)}
-                    className={`w-full flex items-start gap-3 px-4 py-4 rounded-xl border-2 text-left transition-colors ${
+                    className={`w-full flex items-start gap-3 px-5 py-4 rounded-2xl border-2 text-left transition-all ${
                       disclaimerAccepted
-                        ? 'border-eco-400 bg-eco-50'
-                        : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+                        ? 'border-eco-300 bg-eco-50'
+                        : 'border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-white'
                     }`}
                   >
-                    <div className={`w-5 h-5 mt-0.5 rounded flex items-center justify-center shrink-0 border-2 transition-colors ${
+                    <div className={`w-5 h-5 mt-0.5 rounded-md flex items-center justify-center shrink-0 border-2 transition-all ${
                       disclaimerAccepted ? 'bg-eco-500 border-eco-500' : 'border-gray-300 bg-white'
                     }`}>
                       {disclaimerAccepted && <CheckCircle className="w-3.5 h-3.5 text-white" />}
                     </div>
-                    <div>
-                      <p className="text-xs font-bold text-gray-900 mb-1">Déclaration de non-responsabilité — à lire et accepter</p>
-                      <p className="text-xs text-gray-600 leading-relaxed">
-                        Je comprends et j'accepte que <strong>DONNALI est uniquement une plateforme de mise en relation</strong> entre voyageurs et expéditeurs.
-                        DONNALI n'est ni transporteur, ni assureur, ni mandataire. DONNALI ne pourra être tenu responsable
-                        en cas de <strong>litige, annulation de vol, perte, vol, dommage, retard ou tout autre incident</strong> lié à l'échange entre les parties.
-                        Chaque utilisateur agit sous sa propre responsabilité et s'engage à respecter la législation en vigueur.
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-semibold mb-1 ${disclaimerAccepted ? 'text-eco-800' : 'text-gray-800'}`}>
+                        Je m'engage à utiliser DONNALI en toute bonne foi
+                      </p>
+                      <p className="text-xs text-gray-500 leading-relaxed">
+                        Je m'engage à ne transporter que des objets légaux, à ne pas partager mes coordonnées dans l'annonce, et je comprends que DONNALI est une plateforme de mise en relation — les échanges se font entre particuliers, sous leur propre responsabilité.{' '}
+                        <span
+                          role="button"
+                          onClick={(e) => { e.stopPropagation(); onNavigate('cgu'); }}
+                          className="inline-flex items-center gap-0.5 font-semibold text-ocean-600 hover:text-ocean-700 underline underline-offset-2"
+                        >
+                          Lire les CGU <ExternalLink className="w-3 h-3" />
+                        </span>
                       </p>
                     </div>
                   </button>
@@ -724,6 +765,16 @@ export function PostListingPage({ user, onAuthRequired, onNavigate }: PostListin
                     <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-xl">
                       <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
                       <p className="text-red-600 text-xs">{identityError}</p>
+                    </div>
+                  )}
+
+                  {pollingTimedOut && !identityError && (
+                    <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                      <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-amber-800 text-xs font-semibold">Validation en attente</p>
+                        <p className="text-amber-700 text-xs mt-0.5">La vérification prend plus de temps que prévu. Cliquez sur "Vérifier le statut" ci-dessous ou revenez dans quelques minutes.</p>
+                      </div>
                     </div>
                   )}
 

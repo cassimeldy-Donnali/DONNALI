@@ -160,7 +160,7 @@ const SAMPLE_EMAIL_CONFIRMATION = `<!DOCTYPE html>
                 Bienvenue sur Donnali&nbsp;!
               </h1>
               <p style="margin:0;font-size:15px;color:rgba(255,255,255,0.85);line-height:1.6;">
-                Plus qu'une etape pour activer votre compte
+                Plus qu'une étape pour activer votre compte
               </p>
             </td>
           </tr>
@@ -168,7 +168,7 @@ const SAMPLE_EMAIL_CONFIRMATION = `<!DOCTYPE html>
           <tr>
             <td style="background-color:#ffffff;padding:36px 40px;">
               <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.7;">
-                Merci de vous etre inscrit sur <strong style="color:#0077B6;">Donnali</strong>, la plateforme qui connecte voyageurs et expediteurs entre La Reunion, Mayotte et la France metropolitaine.
+                Merci d'avoir rejoint <strong style="color:#0077B6;">Donnali</strong>, la plateforme qui connecte voyageurs et expéditeurs entre La Réunion, Mayotte et la France métropolitaine.
               </p>
 
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:linear-gradient(135deg,#e6f3fb 0%,#cce7f7 100%);border-radius:14px;margin-bottom:24px;">
@@ -185,7 +185,7 @@ const SAMPLE_EMAIL_CONFIRMATION = `<!DOCTYPE html>
                               </td>
                               <td style="padding-left:8px;">
                                 <p style="margin:0;font-size:14px;color:#1e293b;font-weight:600;">Poster une annonce de voyage</p>
-                                <p style="margin:2px 0 0;font-size:12px;color:#64748b;">Indiquez votre vol et votre capacite disponible</p>
+                                <p style="margin:2px 0 0;font-size:12px;color:#64748b;">Indiquez votre vol et votre capacité disponible</p>
                               </td>
                             </tr>
                           </table>
@@ -199,8 +199,8 @@ const SAMPLE_EMAIL_CONFIRMATION = `<!DOCTYPE html>
                                 <span style="font-size:16px;">&#128230;</span>
                               </td>
                               <td style="padding-left:8px;">
-                                <p style="margin:0;font-size:14px;color:#1e293b;font-weight:600;">Trouver un voyageur</p>
-                                <p style="margin:2px 0 0;font-size:12px;color:#64748b;">Envoyez vos colis en toute confiance</p>
+                                <p style="margin:0;font-size:14px;color:#1e293b;font-weight:600;">Trouver un voyageur de confiance</p>
+                                <p style="margin:2px 0 0;font-size:12px;color:#64748b;">Envoyez vos colis en toute sérénité</p>
                               </td>
                             </tr>
                           </table>
@@ -214,8 +214,8 @@ const SAMPLE_EMAIL_CONFIRMATION = `<!DOCTYPE html>
                                 <span style="font-size:16px;">&#128274;</span>
                               </td>
                               <td style="padding-left:8px;">
-                                <p style="margin:0;font-size:14px;color:#1e293b;font-weight:600;">Transactions securisees</p>
-                                <p style="margin:2px 0 0;font-size:12px;color:#64748b;">Coordonnees protegees, paiement securise</p>
+                                <p style="margin:0;font-size:14px;color:#1e293b;font-weight:600;">Transactions sécurisées</p>
+                                <p style="margin:2px 0 0;font-size:12px;color:#64748b;">Coordonnées protégées, paiement sécurisé</p>
                               </td>
                             </tr>
                           </table>
@@ -227,7 +227,7 @@ const SAMPLE_EMAIL_CONFIRMATION = `<!DOCTYPE html>
               </table>
 
               <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.7;">
-                Pour activer votre compte et commencer a utiliser Donnali, cliquez sur le bouton ci-dessous :
+                Pour activer votre compte et commencer à utiliser Donnali, confirmez votre adresse email en cliquant sur le bouton ci-dessous :
               </p>
 
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
@@ -244,7 +244,7 @@ const SAMPLE_EMAIL_CONFIRMATION = `<!DOCTYPE html>
                 <tr>
                   <td style="padding:16px 20px;">
                     <p style="margin:0;font-size:14px;color:#266d4c;line-height:1.6;">
-                      <strong>Lien valide 24h.</strong> Si vous n'avez pas cree de compte sur Donnali, ignorez simplement cet email.
+                      <strong>Lien valide 24h.</strong> Si vous n'avez pas créé de compte sur Donnali, ignorez simplement cet email.
                     </p>
                   </td>
                 </tr>
@@ -254,7 +254,7 @@ const SAMPLE_EMAIL_CONFIRMATION = `<!DOCTYPE html>
                 <tr>
                   <td style="padding:16px 20px;">
                     <p style="margin:0 0 6px;font-size:12px;color:#64748b;">Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :</p>
-                    <p style="margin:0;font-size:12px;color:#0077B6;word-break:break-all;">https://donnali.re/confirm?token=eyJhbGciOiJIUzI1NiJ9.exemple</p>
+                    <p style="margin:0;font-size:12px;color:#0077B6;word-break:break-all;">https://donnali.re/auth/v1/verify?token=eyJhbGciOiJIUzI1NiJ9.exemple&type=signup&redirect_to=https://donnali.re/</p>
                   </td>
                 </tr>
               </table>
@@ -265,12 +265,12 @@ const SAMPLE_EMAIL_CONFIRMATION = `<!DOCTYPE html>
             <td style="background-color:#f8fafc;border-radius:0 0 16px 16px;padding:24px 40px;text-align:center;border-top:1px solid #e2e8f0;">
               <p style="margin:0 0 6px;font-size:14px;font-weight:800;color:#0077B6;letter-spacing:1px;">DONNALI</p>
               <p style="margin:0 0 10px;font-size:12px;color:#94a3b8;line-height:1.6;">
-                La plateforme de mise en relation entre voyageurs et expediteurs.<br/>
-                La Reunion &bull; Mayotte &bull; Paris
+                La plateforme de mise en relation entre voyageurs et expéditeurs.<br/>
+                La Réunion &bull; Mayotte &bull; Paris
               </p>
               <p style="margin:0;font-size:11px;color:#cbd5e1;">
-                Vous recevez cet email car vous venez de creer un compte sur Donnali.<br/>
-                &copy; 2026 Donnali &mdash; Tous droits reserves
+                Vous recevez cet email car vous venez de créer un compte sur Donnali.<br/>
+                &copy; 2026 Donnali &mdash; Tous droits réservés
               </p>
             </td>
           </tr>
@@ -408,7 +408,166 @@ const SAMPLE_PASSWORD_RESET = `<!DOCTYPE html>
 </body>
 </html>`;
 
-type EmailType = 'contact_unlocked' | 'email_confirmation' | 'password_reset';
+const SAMPLE_NEWSLETTER = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Un voyageur correspond a votre alerte – Donnali</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f0f7fb;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f0f7fb;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+
+          <tr>
+            <td style="background:linear-gradient(135deg,#0077B6 0%,#005a8f 100%);border-radius:16px 16px 0 0;padding:36px 40px 32px;text-align:center;">
+              <table cellpadding="0" cellspacing="0" border="0" align="center">
+                <tr>
+                  <td style="background-color:rgba(255,255,255,0.15);border-radius:12px;padding:10px 18px;">
+                    <span style="font-size:20px;font-weight:800;color:#ffffff;letter-spacing:1.5px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">&#9992; DONNALI</span>
+                  </td>
+                </tr>
+              </table>
+              <h1 style="margin:24px 0 8px;font-size:26px;font-weight:700;color:#ffffff;line-height:1.3;">
+                Un voyageur voyage vers La Réunion&nbsp;!
+              </h1>
+              <p style="margin:0;font-size:15px;color:rgba(255,255,255,0.85);line-height:1.6;">
+                Une nouvelle annonce correspond à votre alerte newsletter
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="background-color:#ffffff;padding:36px 40px;">
+
+              <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.7;">
+                Bonne nouvelle ! Un voyageur vient de publier une annonce sur le trajet <strong style="color:#0077B6;">Paris → La Réunion</strong> qui correspond à votre abonnement.
+              </p>
+
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:linear-gradient(135deg,#e6f3fb 0%,#cce7f7 100%);border-radius:14px;margin-bottom:24px;">
+                <tr>
+                  <td style="padding:24px 28px;">
+                    <p style="margin:0 0 16px;font-size:11px;font-weight:700;color:#0077B6;text-transform:uppercase;letter-spacing:1px;">Itinéraire du voyage</p>
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="text-align:center;width:40%;">
+                          <p style="margin:0;font-size:20px;font-weight:800;color:#004c7a;">Paris</p>
+                          <p style="margin:4px 0 0;font-size:11px;color:#0077B6;text-transform:uppercase;letter-spacing:1px;">Départ</p>
+                        </td>
+                        <td style="text-align:center;width:20%;font-size:22px;color:#0077B6;">&#8594;</td>
+                        <td style="text-align:center;width:40%;">
+                          <p style="margin:0;font-size:20px;font-weight:800;color:#004c7a;">La Réunion</p>
+                          <p style="margin:4px 0 0;font-size:11px;color:#0077B6;text-transform:uppercase;letter-spacing:1px;">Arrivée</p>
+                        </td>
+                      </tr>
+                    </table>
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px;border-top:1px solid #99cfef;">
+                      <tr>
+                        <td style="padding-top:14px;">
+                          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td style="text-align:center;width:50%;padding:8px 0;">
+                                <p style="margin:0;font-size:13px;font-weight:700;color:#005a8f;">samedi 18 avril 2026</p>
+                                <p style="margin:2px 0 0;font-size:11px;color:#0077B6;text-transform:uppercase;letter-spacing:1px;">Date du vol</p>
+                              </td>
+                              <td style="text-align:center;width:50%;padding:8px 0;border-left:1px solid #99cfef;">
+                                <p style="margin:0;font-size:13px;font-weight:700;color:#005a8f;">15 kg disponibles</p>
+                                <p style="margin:2px 0 0;font-size:11px;color:#0077B6;text-transform:uppercase;letter-spacing:1px;">Capacité</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:24px;">
+                <tr>
+                  <td style="padding:20px 24px;">
+                    <p style="margin:0 0 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;">Le voyageur</p>
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                      <tr>
+                        <td style="vertical-align:top;width:44px;">
+                          <div style="width:40px;height:40px;background:linear-gradient(135deg,#0077B6,#005a8f);border-radius:50%;text-align:center;line-height:40px;">
+                            <span style="color:#ffffff;font-size:16px;font-weight:700;">M</span>
+                          </div>
+                        </td>
+                        <td style="padding-left:12px;vertical-align:top;">
+                          <p style="margin:0;font-size:15px;font-weight:700;color:#1e293b;">
+                            Martin J.
+                            <span style="display:inline-block;background-color:#dcfce7;color:#166534;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle;">Identité vérifiée</span>
+                            <span style="display:inline-block;background-color:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:4px;vertical-align:middle;">Vol confirmé</span>
+                          </p>
+                          <p style="margin:4px 0 0;font-size:12px;color:#64748b;">Note : 4.8/5 (12 avis)</p>
+                        </td>
+                        <td style="text-align:right;vertical-align:top;">
+                          <p style="margin:0;font-size:16px;font-weight:800;color:#0077B6;">5 €/kg</p>
+                          <p style="margin:2px 0 0;font-size:11px;color:#94a3b8;">par kilo</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:24px;">
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;">Ce que dit le voyageur</p>
+                    <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;font-style:italic;">"Je voyage régulièrement entre Paris et La Réunion pour le travail. Fiable et ponctuel, je peux transporter vêtements, médicaments et petits colis."</p>
+                  </td>
+                </tr>
+              </table>
+
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#fff8e6;border-radius:12px;border-left:4px solid #f59e0b;margin-bottom:28px;">
+                <tr>
+                  <td style="padding:14px 18px;">
+                    <p style="margin:0;font-size:13px;color:#92400e;line-height:1.6;">
+                      Pour voir les coordonnées complètes du voyageur et le contacter, rendez-vous sur l'annonce.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;">
+                <tr>
+                  <td align="center">
+                    <a href="#" style="display:inline-block;background:linear-gradient(135deg,#0077B6,#005a8f);color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:16px 44px;border-radius:12px;letter-spacing:0.5px;">
+                      Voir l'annonce complète
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <tr>
+            <td style="background-color:#f8fafc;border-radius:0 0 16px 16px;padding:24px 40px;text-align:center;border-top:1px solid #e2e8f0;">
+              <p style="margin:0 0 6px;font-size:14px;font-weight:800;color:#0077B6;letter-spacing:1px;">DONNALI</p>
+              <p style="margin:0 0 10px;font-size:12px;color:#94a3b8;line-height:1.6;">
+                La plateforme de mise en relation entre voyageurs et expéditeurs.<br/>
+                La Réunion &bull; Mayotte &bull; Paris
+              </p>
+              <p style="margin:0;font-size:11px;color:#cbd5e1;">
+                Vous recevez cet email car vous êtes abonné aux alertes Donnali.<br/>
+                <a href="#" style="color:#94a3b8;">Se désabonner</a> &mdash; &copy; 2026 Donnali
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+type EmailType = 'contact_unlocked' | 'email_confirmation' | 'password_reset' | 'newsletter_alert';
 
 export function EmailPreviewPage() {
   const [active, setActive] = useState<EmailType>('email_confirmation');
@@ -429,12 +588,18 @@ export function EmailPreviewPage() {
       label: 'Réinitialisation mot de passe',
       subject: 'Réinitialisation de votre mot de passe – Donnali',
     },
+    {
+      id: 'newsletter_alert',
+      label: 'Alerte newsletter',
+      subject: 'Nouveau voyageur Paris → La Réunion – Donnali',
+    },
   ];
 
   const htmlMap: Record<EmailType, string> = {
     email_confirmation: SAMPLE_EMAIL_CONFIRMATION,
     contact_unlocked: SAMPLE_CONTACT_UNLOCKED,
     password_reset: SAMPLE_PASSWORD_RESET,
+    newsletter_alert: SAMPLE_NEWSLETTER,
   };
   const html = htmlMap[active];
   const current = templates.find((t) => t.id === active)!;

@@ -72,10 +72,10 @@ export function Hero({ onSearch, onNavigate }: HeroProps) {
           <div className="mt-8 flex items-center gap-4">
             <button
               onClick={() => onNavigate('listings')}
-              className="inline-flex items-center gap-2 text-ocean-200 hover:text-white text-sm font-medium transition-colors group"
+              className="inline-flex items-center gap-2 text-ocean-200 hover:text-white text-sm font-medium transition-all duration-200 group"
             >
               Voir toutes les annonces
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-200" />
             </button>
           </div>
         </div>

@@ -2,6 +2,7 @@ import { Hero } from '../components/home/Hero';
 import { HowItWorks } from '../components/home/HowItWorks';
 import { Stats } from '../components/home/Stats';
 import { Testimonials } from '../components/home/Testimonials';
+import { NewsletterBanner } from '../components/newsletter/NewsletterBanner';
 import type { SearchFilters } from '../types';
 
 interface HomePageProps {
@@ -16,6 +17,20 @@ export function HomePage({ onSearch, onNavigate }: HomePageProps) {
       <HowItWorks />
       <Stats />
       <Testimonials />
+
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
+              Ne ratez plus aucune annonce
+            </h2>
+            <p className="text-gray-500 text-base max-w-xl mx-auto">
+              Recevez une notification par email dès qu'un voyageur publie pour votre destination.
+            </p>
+          </div>
+          <NewsletterBanner />
+        </div>
+      </section>
 
       <section className="py-20 bg-gradient-to-br from-ocean-600 to-ocean-800 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, ArrowRight, MapPin, Calendar } from 'lucide-react';
+import { Search, ArrowRight, MapPin, CalendarDays } from 'lucide-react';
 import type { City, SearchFilters } from '../../types';
 import { CITY_LABELS } from '../../types';
 
@@ -14,11 +14,12 @@ interface SearchBarProps {
 export function SearchBar({ onSearch, variant = 'inline', initialFilters }: SearchBarProps) {
   const [departure, setDeparture] = useState<City | ''>(initialFilters?.departure || '');
   const [destination, setDestination] = useState<City | ''>(initialFilters?.destination || '');
-  const [date, setDate] = useState(initialFilters?.date || '');
+  const [dateFrom, setDateFrom] = useState(initialFilters?.dateFrom || initialFilters?.date || '');
+  const [dateTo, setDateTo] = useState(initialFilters?.dateTo || '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch({ departure, destination, date, minKilos: 0, maxPrice: 999 });
+    onSearch({ departure, destination, date: '', dateFrom, dateTo, minKilos: 0, maxPrice: 999, onlyVerified: false, onlyFlightVerified: false, minRating: 0, freeOnly: false });
   };
 
   const baseInput =
@@ -27,57 +28,76 @@ export function SearchBar({ onSearch, variant = 'inline', initialFilters }: Sear
   if (variant === 'hero') {
     return (
       <form onSubmit={handleSubmit}>
-        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-2 shadow-2xl">
-          <div className="flex flex-col sm:flex-row gap-2">
-            <div className="flex-1 relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ocean-300 pointer-events-none z-10" />
-              <select
-                value={departure}
-                onChange={(e) => setDeparture(e.target.value as City | '')}
-                className="w-full pl-9 pr-3 py-3.5 bg-white/95 text-gray-800 text-sm font-medium rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-eco-400 appearance-none cursor-pointer"
+        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-3 shadow-2xl">
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex-1 relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ocean-300 pointer-events-none z-10" />
+                <select
+                  value={departure}
+                  onChange={(e) => setDeparture(e.target.value as City | '')}
+                  className="w-full pl-9 pr-3 py-3.5 bg-white/95 text-gray-800 text-sm font-medium rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-eco-400 appearance-none cursor-pointer"
+                >
+                  <option value="">Ville de départ</option>
+                  {CITIES.map((c) => (
+                    <option key={c} value={c}>{CITY_LABELS[c]}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="hidden sm:flex items-center">
+                <ArrowRight className="w-5 h-5 text-ocean-200" />
+              </div>
+
+              <div className="flex-1 relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-eco-400 pointer-events-none z-10" />
+                <select
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value as City | '')}
+                  className="w-full pl-9 pr-3 py-3.5 bg-white/95 text-gray-800 text-sm font-medium rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-eco-400 appearance-none cursor-pointer"
+                >
+                  <option value="">Ville d'arrivée</option>
+                  {CITIES.map((c) => (
+                    <option key={c} value={c}>{CITY_LABELS[c]}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2 items-center">
+              <div className="flex items-center gap-2 shrink-0">
+                <CalendarDays className="w-4 h-4 text-ocean-200 hidden sm:block" />
+                <span className="text-white/90 text-sm font-semibold whitespace-nowrap">
+                  Je veux un voyageur du
+                </span>
+              </div>
+              <div className="flex flex-1 items-center gap-2 w-full">
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => {
+                    setDateFrom(e.target.value);
+                    if (dateTo && e.target.value > dateTo) setDateTo('');
+                  }}
+                  className="flex-1 px-3 py-3.5 bg-white/95 text-gray-800 text-sm font-medium rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-eco-400 min-w-0"
+                />
+                <span className="text-white/90 text-sm font-semibold whitespace-nowrap">au</span>
+                <input
+                  type="date"
+                  value={dateTo}
+                  min={dateFrom || undefined}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="flex-1 px-3 py-3.5 bg-white/95 text-gray-800 text-sm font-medium rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-eco-400 min-w-0"
+                />
+              </div>
+              <button
+                type="submit"
+                className="flex items-center justify-center gap-2 px-6 py-3.5 bg-eco-500 hover:bg-eco-600 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-eco-500/30 whitespace-nowrap w-full sm:w-auto"
               >
-                <option value="">Ville de départ</option>
-                {CITIES.map((c) => (
-                  <option key={c} value={c}>{CITY_LABELS[c]}</option>
-                ))}
-              </select>
+                <Search className="w-4 h-4" />
+                <span>Rechercher</span>
+              </button>
             </div>
-
-            <div className="hidden sm:flex items-center">
-              <ArrowRight className="w-5 h-5 text-ocean-200" />
-            </div>
-
-            <div className="flex-1 relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-eco-400 pointer-events-none z-10" />
-              <select
-                value={destination}
-                onChange={(e) => setDestination(e.target.value as City | '')}
-                className="w-full pl-9 pr-3 py-3.5 bg-white/95 text-gray-800 text-sm font-medium rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-eco-400 appearance-none cursor-pointer"
-              >
-                <option value="">Ville d'arrivée</option>
-                {CITIES.map((c) => (
-                  <option key={c} value={c}>{CITY_LABELS[c]}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex-1 relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ocean-300 pointer-events-none z-10" />
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full pl-9 pr-3 py-3.5 bg-white/95 text-gray-800 text-sm font-medium rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-eco-400"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="flex items-center justify-center gap-2 px-6 py-3.5 bg-eco-500 hover:bg-eco-600 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-eco-500/30 whitespace-nowrap"
-            >
-              <Search className="w-4 h-4" />
-              <span>Rechercher</span>
-            </button>
           </div>
         </div>
       </form>
@@ -85,52 +105,71 @@ export function SearchBar({ onSearch, variant = 'inline', initialFilters }: Sear
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
-      <div className="relative flex-1">
-        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ocean-400 pointer-events-none z-10" />
-        <select
-          value={departure}
-          onChange={(e) => setDeparture(e.target.value as City | '')}
-          className={`${baseInput} pl-9 pr-3 py-2.5`}
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ocean-400 pointer-events-none z-10" />
+          <select
+            value={departure}
+            onChange={(e) => setDeparture(e.target.value as City | '')}
+            className={`${baseInput} pl-9 pr-3 py-2.5`}
+          >
+            <option value="">Départ</option>
+            {CITIES.map((c) => (
+              <option key={c} value={c}>{CITY_LABELS[c]}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="relative flex-1">
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-eco-500 pointer-events-none z-10" />
+          <select
+            value={destination}
+            onChange={(e) => setDestination(e.target.value as City | '')}
+            className={`${baseInput} pl-9 pr-3 py-2.5`}
+          >
+            <option value="">Arrivée</option>
+            {CITIES.map((c) => (
+              <option key={c} value={c}>{CITY_LABELS[c]}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
+          <CalendarDays className="w-4 h-4 text-ocean-400" />
+          <span className="text-gray-600 text-sm font-semibold whitespace-nowrap">
+            Je veux un voyageur du
+          </span>
+        </div>
+        <div className="flex flex-1 items-center gap-2 w-full">
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => {
+              setDateFrom(e.target.value);
+              if (dateTo && e.target.value > dateTo) setDateTo('');
+            }}
+            className={`${baseInput} flex-1 px-3 py-2.5 min-w-0`}
+          />
+          <span className="text-gray-500 text-sm font-semibold whitespace-nowrap">au</span>
+          <input
+            type="date"
+            value={dateTo}
+            min={dateFrom || undefined}
+            onChange={(e) => setDateTo(e.target.value)}
+            className={`${baseInput} flex-1 px-3 py-2.5 min-w-0`}
+          />
+        </div>
+        <button
+          type="submit"
+          className="flex items-center justify-center gap-2 px-5 py-2.5 bg-ocean-500 hover:bg-ocean-600 text-white font-semibold rounded-xl transition-colors text-sm whitespace-nowrap w-full sm:w-auto"
         >
-          <option value="">Départ</option>
-          {CITIES.map((c) => (
-            <option key={c} value={c}>{CITY_LABELS[c]}</option>
-          ))}
-        </select>
+          <Search className="w-4 h-4" />
+          Rechercher
+        </button>
       </div>
-
-      <div className="relative flex-1">
-        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-eco-500 pointer-events-none z-10" />
-        <select
-          value={destination}
-          onChange={(e) => setDestination(e.target.value as City | '')}
-          className={`${baseInput} pl-9 pr-3 py-2.5`}
-        >
-          <option value="">Arrivée</option>
-          {CITIES.map((c) => (
-            <option key={c} value={c}>{CITY_LABELS[c]}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="relative flex-1">
-        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ocean-400 pointer-events-none z-10" />
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className={`${baseInput} pl-9 pr-3 py-2.5`}
-        />
-      </div>
-
-      <button
-        type="submit"
-        className="flex items-center justify-center gap-2 px-5 py-2.5 bg-ocean-500 hover:bg-ocean-600 text-white font-semibold rounded-xl transition-colors text-sm whitespace-nowrap"
-      >
-        <Search className="w-4 h-4" />
-        Rechercher
-      </button>
     </form>
   );
 }

@@ -19,6 +19,8 @@ export interface Listing {
   phone: string;
   contact_email: string;
   is_active: boolean;
+  is_published: boolean;
+  expires_at: string | null;
   created_at: string;
   profiles?: {
     full_name: string;
@@ -26,6 +28,8 @@ export interface Listing {
     id_verified: boolean;
     identity_verified: boolean;
     flight_verified: boolean;
+    rating_avg?: number;
+    rating_count?: number;
   };
 }
 
@@ -34,16 +38,36 @@ export interface Profile {
   full_name: string;
   avatar_url: string | null;
   phone: string | null;
+  bio: string | null;
   id_verified: boolean;
   identity_verified: boolean;
   flight_verified: boolean;
   trust_score: number;
+  is_admin: boolean;
+  rating_avg: number;
+  rating_count: number;
+}
+
+export interface Rating {
+  id: string;
+  rater_id: string;
+  rated_user_id: string;
+  listing_id: string;
+  score: number;
+  comment: string;
+  created_at: string;
 }
 
 export interface SearchFilters {
   departure: City | '';
   destination: City | '';
   date: string;
+  dateFrom: string;
+  dateTo: string;
   minKilos: number;
   maxPrice: number;
+  onlyVerified: boolean;
+  onlyFlightVerified: boolean;
+  minRating: number;
+  freeOnly: boolean;
 }

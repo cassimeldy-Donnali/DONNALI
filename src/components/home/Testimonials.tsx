@@ -1,4 +1,5 @@
 import { Star, Quote } from 'lucide-react';
+import { useInView } from '../../hooks/useInView';
 
 const TESTIMONIALS = [
   {
@@ -28,10 +29,12 @@ const TESTIMONIALS = [
 ];
 
 export function Testimonials() {
+  const { ref, inView } = useInView({ threshold: 0.1 });
+
   return (
-    <section className="py-20 bg-white">
+    <section ref={ref as React.RefObject<HTMLElement>} className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-14">
+        <div className={`text-center mb-14 transition-all duration-700 ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
           <span className="inline-block px-3 py-1 bg-eco-50 text-eco-600 text-xs font-semibold rounded-full tracking-wide uppercase mb-3">
             Ils nous font confiance
           </span>
@@ -47,12 +50,19 @@ export function Testimonials() {
           {TESTIMONIALS.map((t, index) => (
             <div
               key={index}
-              className="bg-gradient-to-br from-white to-ocean-50 rounded-2xl p-8 shadow-card hover:shadow-card-hover transition-shadow border border-ocean-100 relative group"
+              style={{ transitionDelay: `${index * 120}ms` }}
+              className={`bg-gradient-to-br from-white to-ocean-50 rounded-2xl p-8 shadow-card hover:shadow-card-hover border border-ocean-100 relative group
+                transition-all duration-700 hover:-translate-y-1
+                ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
             >
-              <Quote className="absolute top-6 right-6 w-10 h-10 text-ocean-100 group-hover:text-ocean-200 transition-colors" />
+              <Quote className="absolute top-6 right-6 w-10 h-10 text-ocean-100 group-hover:text-ocean-200 transition-colors duration-300" />
               <div className="flex items-center gap-1 mb-5">
                 {[...Array(t.rating)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 text-amber-400 fill-amber-400" />
+                  <Star
+                    key={i}
+                    style={{ transitionDelay: `${(index * 120) + (i * 60)}ms` }}
+                    className={`w-4 h-4 text-amber-400 fill-amber-400 transition-all duration-500 ${inView ? 'opacity-100 scale-100' : 'opacity-0 scale-0'}`}
+                  />
                 ))}
               </div>
               <p className="text-gray-700 text-sm leading-relaxed mb-6 italic">

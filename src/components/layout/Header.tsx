@@ -1,6 +1,9 @@
-import { useState } from 'react';
-import { Plane, Leaf, Menu, X, User, LogOut, LayoutDashboard, PlusCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plane, Leaf, Menu, X, User, LogOut, LayoutDashboard, PlusCircle, Shield } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { supabase } from '../../lib/supabase';
+import { useNotifications } from '../../hooks/useNotifications';
+import { NotificationBell, NotificationPanel } from '../notifications/NotificationCenter';
 
 interface HeaderProps {
   currentPage: string;
@@ -13,6 +16,24 @@ interface HeaderProps {
 export function Header({ currentPage, onNavigate, user, onAuthClick, onSignOut }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const { notifications, unreadCount, markAllRead, markRead } = useNotifications(user);
+
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    (async () => {
+      const { data } = await supabase.from('profiles').select('is_admin').eq('id', user.id).maybeSingle();
+      setIsAdmin(data?.is_admin ?? false);
+    })();
+  }, [user]);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const navLinks = [
     { id: 'home', label: 'Accueil' },
@@ -28,7 +49,11 @@ export function Header({ currentPage, onNavigate, user, onAuthClick, onSignOut }
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-ocean-100 shadow-sm">
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      scrolled
+        ? 'bg-white/95 backdrop-blur-md border-b border-ocean-100 shadow-md'
+        : 'bg-white/95 backdrop-blur-sm border-b border-ocean-100 shadow-sm'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <button
@@ -66,11 +91,23 @@ export function Header({ currentPage, onNavigate, user, onAuthClick, onSignOut }
               <>
                 <button
                   onClick={() => handleNav('post')}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-ocean-600 border-2 border-ocean-200 rounded-xl hover:bg-ocean-50 transition-all"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-ocean-600 border-2 border-ocean-200 rounded-xl hover:bg-ocean-50 hover:border-ocean-400 hover:shadow-sm transition-all duration-200 active:scale-95"
                 >
                   <PlusCircle className="w-4 h-4" />
                   Publier une annonce
                 </button>
+                <div className="relative">
+                  <NotificationBell unreadCount={unreadCount} onClick={() => { setNotifOpen(!notifOpen); setUserMenuOpen(false); }} />
+                  {notifOpen && (
+                    <NotificationPanel
+                      notifications={notifications}
+                      unreadCount={unreadCount}
+                      onMarkAllRead={markAllRead}
+                      onMarkRead={markRead}
+                      onClose={() => setNotifOpen(false)}
+                    />
+                  )}
+                </div>
                 <div className="relative">
                   <button
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -92,6 +129,22 @@ export function Header({ currentPage, onNavigate, user, onAuthClick, onSignOut }
                         <LayoutDashboard className="w-4 h-4" />
                         Tableau de bord
                       </button>
+                      <button
+                        onClick={() => handleNav('profile')}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-ocean-50 hover:text-ocean-600 transition-colors"
+                      >
+                        <User className="w-4 h-4" />
+                        Mon profil
+                      </button>
+                      {isAdmin && (
+                        <button
+                          onClick={() => handleNav('admin')}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-ocean-50 hover:text-ocean-600 transition-colors"
+                        >
+                          <Shield className="w-4 h-4" />
+                          Administration
+                        </button>
+                      )}
                       <div className="border-t border-gray-100 my-1" />
                       <button
                         onClick={onSignOut}
@@ -162,6 +215,20 @@ export function Header({ currentPage, onNavigate, user, onAuthClick, onSignOut }
                 >
                   Tableau de bord
                 </button>
+                <button
+                  onClick={() => handleNav('profile')}
+                  className="w-full py-3 text-sm font-medium text-gray-700 hover:text-ocean-600"
+                >
+                  Mon profil
+                </button>
+                {isAdmin && (
+                  <button
+                    onClick={() => handleNav('admin')}
+                    className="w-full py-3 text-sm font-medium text-gray-700 hover:text-ocean-600"
+                  >
+                    Administration
+                  </button>
+                )}
                 <button
                   onClick={onSignOut}
                   className="w-full py-3 text-sm font-medium text-red-600"

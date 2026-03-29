@@ -11,6 +11,7 @@ import type { Listing, SearchFilters } from '../types';
 import { supabase } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { Search, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
+import { NewsletterBanner } from '../components/newsletter/NewsletterBanner';
 
 interface ListingsPageProps {
   user: User | null;
@@ -22,8 +23,14 @@ const DEFAULT_FILTERS: SearchFilters = {
   departure: '',
   destination: '',
   date: '',
+  dateFrom: '',
+  dateTo: '',
   minKilos: 0,
   maxPrice: 999,
+  onlyVerified: false,
+  onlyFlightVerified: false,
+  minRating: 0,
+  freeOnly: false,
 };
 
 const PAGE_SIZE = 12;
@@ -33,14 +40,33 @@ export function ListingsPage({ user, onAuthRequired, initialFilters }: ListingsP
   const { success, error: toastError } = useToast();
 
   const filtersFromUrl: Partial<SearchFilters> = {
-    departure: searchParams.get('departure') || '',
-    destination: searchParams.get('destination') || '',
+    departure: searchParams.get('departure') as SearchFilters['departure'] || '',
+    destination: searchParams.get('destination') as SearchFilters['destination'] || '',
     date: searchParams.get('date') || '',
+    dateFrom: searchParams.get('dateFrom') || '',
+    dateTo: searchParams.get('dateTo') || '',
     minKilos: searchParams.get('minKilos') ? parseInt(searchParams.get('minKilos')!) : 0,
     maxPrice: searchParams.get('maxPrice') ? parseInt(searchParams.get('maxPrice')!) : 999,
+    onlyVerified: searchParams.get('onlyVerified') === 'true',
+    onlyFlightVerified: searchParams.get('onlyFlightVerified') === 'true',
+    minRating: searchParams.get('minRating') ? parseInt(searchParams.get('minRating')!) : 0,
+    freeOnly: searchParams.get('freeOnly') === 'true',
   };
 
-  const [filters, setFilters] = useState<SearchFilters>({ ...DEFAULT_FILTERS, ...filtersFromUrl, ...initialFilters });
+  const getSavedFilters = (): Partial<SearchFilters> => {
+    try {
+      const raw = localStorage.getItem('donnali_listing_filters');
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  };
+
+  const savedFilters = getSavedFilters();
+  const hasUrlFilters = Object.values(filtersFromUrl).some((v) => v !== '' && v !== 0 && v !== 999 && v !== false);
+  const baseFilters = hasUrlFilters ? filtersFromUrl : savedFilters;
+
+  const [filters, setFilters] = useState<SearchFilters>({ ...DEFAULT_FILTERS, ...baseFilters, ...initialFilters });
   const [listings, setListings] = useState<Listing[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -56,12 +82,21 @@ export function ListingsPage({ user, onAuthRequired, initialFilters }: ListingsP
   const updateFiltersAndUrl = (newFilters: SearchFilters) => {
     setFilters(newFilters);
     setCurrentPage(1);
+    try {
+      localStorage.setItem('donnali_listing_filters', JSON.stringify(newFilters));
+    } catch { }
     const params: Record<string, string> = {};
     if (newFilters.departure) params.departure = newFilters.departure;
     if (newFilters.destination) params.destination = newFilters.destination;
     if (newFilters.date) params.date = newFilters.date;
+    if (newFilters.dateFrom) params.dateFrom = newFilters.dateFrom;
+    if (newFilters.dateTo) params.dateTo = newFilters.dateTo;
     if (newFilters.minKilos > 0) params.minKilos = String(newFilters.minKilos);
     if (newFilters.maxPrice < 999) params.maxPrice = String(newFilters.maxPrice);
+    if (newFilters.onlyVerified) params.onlyVerified = 'true';
+    if (newFilters.onlyFlightVerified) params.onlyFlightVerified = 'true';
+    if (newFilters.minRating > 0) params.minRating = String(newFilters.minRating);
+    if (newFilters.freeOnly) params.freeOnly = 'true';
     setSearchParams(params, { replace: true });
   };
 
@@ -73,7 +108,7 @@ export function ListingsPage({ user, onAuthRequired, initialFilters }: ListingsP
 
       let query = supabase
         .from('listings')
-        .select('*, profiles(full_name, avatar_url, id_verified, identity_verified, flight_verified)', { count: 'exact' })
+        .select('*, profiles(full_name, avatar_url, id_verified, identity_verified, flight_verified, rating_avg, rating_count)', { count: 'exact' })
         .eq('is_active', true)
         .eq('is_published', true)
         .order('created_at', { ascending: false })
@@ -82,12 +117,32 @@ export function ListingsPage({ user, onAuthRequired, initialFilters }: ListingsP
       if (filters.departure) query = query.eq('departure', filters.departure);
       if (filters.destination) query = query.eq('destination', filters.destination);
       if (filters.date) query = query.eq('flight_date', filters.date);
+      if (filters.dateFrom) query = query.gte('flight_date', filters.dateFrom);
+      if (filters.dateTo) query = query.lte('flight_date', filters.dateTo);
       if (filters.minKilos > 0) query = query.gte('kilos_available', filters.minKilos);
       if (filters.maxPrice < 999) query = query.lte('price_per_kilo', filters.maxPrice);
+      if (filters.freeOnly) query = query.eq('price_per_kilo', 0);
 
       const { data, count } = await query;
-      setListings((data as Listing[]) ?? []);
-      setTotalCount(count ?? 0);
+
+      let results = (data as Listing[]) ?? [];
+
+      if (filters.onlyVerified) {
+        results = results.filter((l) => l.profiles?.identity_verified);
+      }
+      if (filters.onlyFlightVerified) {
+        results = results.filter((l) => l.profiles?.flight_verified);
+      }
+      if (filters.minRating > 0) {
+        results = results.filter((l) => (l.profiles?.rating_avg ?? 0) >= filters.minRating);
+      }
+
+      setListings(results);
+      setTotalCount(
+        filters.onlyVerified || filters.onlyFlightVerified || filters.minRating > 0
+          ? results.length
+          : (count ?? 0)
+      );
       setLoading(false);
     })();
   }, [filters, currentPage]);
@@ -107,9 +162,15 @@ export function ListingsPage({ user, onAuthRequired, initialFilters }: ListingsP
     setUnlockedIds((prev) => new Set([...prev, listingId]));
   };
 
-  const handleSearch = (f: SearchFilters) => {
-    updateFiltersAndUrl(f);
+  const handleSearch = (f: Partial<SearchFilters>) => {
+    const merged = { ...filters, ...f, date: '' };
+    updateFiltersAndUrl(merged);
     setShowFilters(false);
+  };
+
+  const handleReset = () => {
+    try { localStorage.removeItem('donnali_listing_filters'); } catch { }
+    updateFiltersAndUrl(DEFAULT_FILTERS);
   };
 
   const handleToggleFavorite = async (listingId: string): Promise<boolean> => {
@@ -184,24 +245,34 @@ export function ListingsPage({ user, onAuthRequired, initialFilters }: ListingsP
                   Essayez de modifier vos critères de recherche ou revenez plus tard.
                 </p>
                 <button
-                  onClick={() => updateFiltersAndUrl(DEFAULT_FILTERS)}
+                  onClick={handleReset}
                   className="mt-4 px-5 py-2 bg-ocean-500 text-white text-sm font-semibold rounded-xl hover:bg-ocean-600 transition-colors"
                 >
                   Réinitialiser
                 </button>
+                <div className="mt-10 w-full max-w-md">
+                  <NewsletterBanner
+                    suggestedDestination={filters.destination as 'reunion' | 'mayotte' | 'paris' | undefined}
+                  />
+                </div>
               </div>
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                  {listings.map((listing) => (
-                    <ListingCard
+                  {listings.map((listing, index) => (
+                    <div
                       key={listing.id}
-                      listing={listing}
-                      isUnlocked={unlockedIds.has(listing.id)}
-                      isFavorite={favoriteIds.has(listing.id)}
-                      onUnlock={setSelectedListing}
-                      onToggleFavorite={handleToggleFavorite}
-                    />
+                      className="animate-fade-up"
+                      style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
+                    >
+                      <ListingCard
+                        listing={listing}
+                        isUnlocked={unlockedIds.has(listing.id)}
+                        isFavorite={favoriteIds.has(listing.id)}
+                        onUnlock={setSelectedListing}
+                        onToggleFavorite={handleToggleFavorite}
+                      />
+                    </div>
                   ))}
                 </div>
 
@@ -262,6 +333,12 @@ export function ListingsPage({ user, onAuthRequired, initialFilters }: ListingsP
                     Page {currentPage} sur {totalPages} · {totalCount} annonce{totalCount !== 1 ? 's' : ''} au total
                   </p>
                 )}
+
+                <div className="mt-10">
+                  <NewsletterBanner
+                    suggestedDestination={filters.destination as 'reunion' | 'mayotte' | 'paris' | undefined}
+                  />
+                </div>
               </>
             )}
           </main>

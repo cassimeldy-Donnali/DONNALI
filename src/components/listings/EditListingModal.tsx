@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { moderateContent } from '../../lib/contentModeration';
 import type { Listing, City } from '../../types';
 import { CITY_LABELS } from '../../types';
 
@@ -47,8 +48,30 @@ export function EditListingModal({ listing, onClose, onSaved }: EditListingModal
       setError('Numéro de téléphone invalide.');
       return;
     }
+    if (parseInt(form.kilos_available) < 1 || parseInt(form.kilos_available) > 30) {
+      setError('Le nombre de kilos disponibles doit être compris entre 1 et 30.');
+      return;
+    }
+    if (parseFloat(form.price_per_kilo) < 0) {
+      setError('Le prix par kilo ne peut pas être négatif.');
+      return;
+    }
+    if (form.description && form.description.length > 1000) {
+      setError('Votre message ne peut pas dépasser 1000 caractères.');
+      return;
+    }
 
     setLoading(true);
+
+    const textsToCheck = [form.description].filter(Boolean) as string[];
+    if (textsToCheck.length > 0) {
+      const moderation = await moderateContent(textsToCheck);
+      if (!moderation.allowed) {
+        setError(moderation.message || 'Contenu non autorisé détecté.');
+        setLoading(false);
+        return;
+      }
+    }
     try {
       const { data, error: updateError } = await supabase
         .from('listings')
@@ -146,7 +169,11 @@ export function EditListingModal({ listing, onClose, onSaved }: EditListingModal
               onChange={(e) => set('description', e.target.value)}
               rows={3} className={`${inputClass} resize-none`}
               placeholder="Ex : J'accepte vêtements, chaussures et cadeaux emballés."
+              maxLength={1000}
             />
+            <p className={`text-right text-xs mt-1 ${form.description.length > 900 ? 'text-amber-600 font-semibold' : 'text-gray-400'}`}>
+              {form.description.length}/1000
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

@@ -1,4 +1,5 @@
 import { ShieldCheck, Search, MessageCircle, Package, UserCheck, PlusCircle, BadgeCheck, MapPin, AlertOctagon, PhoneCall } from 'lucide-react';
+import { useInView } from '../../hooks/useInView';
 
 const TRAVELER_STEPS = [
   {
@@ -17,7 +18,7 @@ const TRAVELER_STEPS = [
     icon: PhoneCall,
     step: '03',
     title: 'Être contacté',
-    description: "Un expéditeur débloque vos coordonnées pour 2,99 EUR. Vous êtes notifié et coordonnez directement ensemble.",
+    description: "Si votre annonce correspond aux critères d'un expéditeur (destination, prix, date, kilos), il débloquera vos coordonnées et vous organiserez le transfert directement ensemble.",
   },
   {
     icon: Package,
@@ -82,11 +83,19 @@ const SAFETY_TIPS = [
 ];
 
 export function HowItWorks() {
+  const { ref: headRef, inView: headIn } = useInView({ threshold: 0.2 });
+  const { ref: leftRef, inView: leftIn } = useInView({ threshold: 0.15 });
+  const { ref: rightRef, inView: rightIn } = useInView({ threshold: 0.15 });
+  const { ref: bottomRef, inView: bottomIn } = useInView({ threshold: 0.1 });
+
   return (
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        <div className="text-center mb-16">
+        <div
+          ref={headRef as React.RefObject<HTMLDivElement>}
+          className={`text-center mb-16 transition-all duration-700 ${headIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+        >
           <span className="inline-block px-3 py-1 bg-ocean-50 text-ocean-600 text-xs font-semibold rounded-full tracking-wide uppercase mb-3">
             Simple et sécurisé
           </span>
@@ -100,7 +109,11 @@ export function HowItWorks() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
 
-          <div className="bg-gradient-to-br from-ocean-50 to-ocean-100/50 rounded-3xl p-8 border border-ocean-100">
+          <div
+            ref={leftRef as React.RefObject<HTMLDivElement>}
+            className={`bg-gradient-to-br from-ocean-50 to-ocean-100/50 rounded-3xl p-8 border border-ocean-100
+              transition-all duration-700 ${leftIn ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}
+          >
             <div className="flex items-center gap-3 mb-8">
               <div className="w-10 h-10 bg-ocean-500 rounded-xl flex items-center justify-center">
                 <Package className="w-5 h-5 text-white" />
@@ -147,7 +160,11 @@ export function HowItWorks() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-eco-50 to-eco-100/50 rounded-3xl p-8 border border-eco-100">
+          <div
+            ref={rightRef as React.RefObject<HTMLDivElement>}
+            className={`bg-gradient-to-br from-eco-50 to-eco-100/50 rounded-3xl p-8 border border-eco-100
+              transition-all duration-700 ${rightIn ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}
+          >
             <div className="flex items-center gap-3 mb-8">
               <div className="w-10 h-10 bg-eco-500 rounded-xl flex items-center justify-center">
                 <Search className="w-5 h-5 text-white" />
@@ -195,7 +212,10 @@ export function HowItWorks() {
           </div>
         </div>
 
-        <div className="bg-gray-900 rounded-3xl p-8 sm:p-10">
+        <div
+          ref={bottomRef as React.RefObject<HTMLDivElement>}
+          className={`bg-gray-900 rounded-3xl p-8 sm:p-10 transition-all duration-700 ${bottomIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+        >
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8">
             <div className="w-12 h-12 bg-amber-400/20 rounded-2xl flex items-center justify-center shrink-0">
               <ShieldCheck className="w-6 h-6 text-amber-400" />

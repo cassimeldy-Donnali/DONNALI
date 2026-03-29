@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, HelpCircle, ShieldCheck, Plane, User, Lock, CheckCircle, AlertTriangle, Package, Star } from 'lucide-react';
+import { ChevronDown, HelpCircle, ShieldCheck, Plane, User, Lock, CheckCircle, AlertTriangle, Package, Star, QrCode, Send, KeyRound, Archive } from 'lucide-react';
 
 const FAQS = [
   {
@@ -124,7 +124,7 @@ const FAQS = [
       },
       {
         q: "Comment se passe la remise du colis ?",
-        a: "Après avoir débloqué le contact, coordonnez-vous directement avec le voyageur. Rencontrez-vous dans un lieu public avant son départ. Apportez une liste du contenu signée et photographiez le colis scellé.",
+        a: "Après avoir débloqué le contact, coordonnez-vous directement avec le voyageur pour fixer un rendez-vous. Lors de la rencontre physique, l'expéditeur génère un code unique à 6 caractères directement sur son téléphone — sur place, jamais à l'avance. Le voyageur entre immédiatement ce code sur son propre téléphone. Un enregistrement horodaté est créé à la seconde, preuve irréfutable que les deux parties étaient présentes au même moment.",
       },
       {
         q: "Que faire si le voyageur ne répond pas ?",
@@ -258,7 +258,104 @@ export function FAQPage({ onNavigate }: FAQPageProps) {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm mb-6">
+          <div className="bg-gradient-to-r from-eco-500 to-eco-600 px-6 py-5 flex items-center gap-4">
+            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
+              <QrCode className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/20 rounded-full text-white text-xs font-semibold mb-1">
+                <CheckCircle className="w-3.5 h-3.5" />
+                Fonctionnalite cle
+              </div>
+              <h3 className="font-poppins font-bold text-white text-lg leading-tight">
+                Le systeme de code de remise
+              </h3>
+              <p className="text-eco-100 text-sm">Genere sur place, valide a la seconde</p>
+            </div>
+          </div>
+
+          <div className="p-6">
+            <p className="text-gray-600 text-sm leading-relaxed mb-6">
+              Le code de remise n'est <strong className="text-gray-900">pas genere a l'avance</strong> — il est cree sur place, au moment exact de la rencontre. L'expediteur appuie sur le bouton, le code s'affiche, le voyageur le saisit immediatement. Un enregistrement horodate est cree a la seconde, preuve irrefutable que les deux parties etaient presentes ensemble.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              {[
+                {
+                  icon: Send,
+                  step: '1',
+                  badge: 'Sur place — expediteur',
+                  badgeColor: 'bg-blue-100 text-blue-700',
+                  title: 'Generation au moment de la remise',
+                  desc: "L'expediteur ouvre l'application lors de la rencontre physique et appuie sur \"Generer le code sur place\". Un code unique comme DL4X2B est cree, valable 15 minutes.",
+                  color: 'border-blue-100 bg-blue-50',
+                  iconColor: 'bg-blue-100 text-blue-600',
+                  stepColor: 'bg-blue-500',
+                },
+                {
+                  icon: KeyRound,
+                  step: '2',
+                  badge: 'Immediatement — voyageur',
+                  badgeColor: 'bg-amber-100 text-amber-700',
+                  title: 'Saisie en direct',
+                  desc: "L'expediteur dicte ou montre le code. Le voyageur le saisit immediatement sur son propre telephone dans les 6 cases prevues. Les deux sont presents au meme endroit.",
+                  color: 'border-amber-100 bg-amber-50',
+                  iconColor: 'bg-amber-100 text-amber-600',
+                  stepColor: 'bg-amber-500',
+                },
+                {
+                  icon: Archive,
+                  step: '3',
+                  badge: 'Instantane',
+                  badgeColor: 'bg-eco-100 text-eco-700',
+                  title: 'Preuve horodatee a la seconde',
+                  desc: "A la validation, un enregistrement immuable avec la date et l'heure exactes est cree. C'est la preuve que l'echange a eu lieu. Accessible dans le tableau de bord des deux parties.",
+                  color: 'border-eco-100 bg-eco-50',
+                  iconColor: 'bg-eco-100 text-eco-600',
+                  stepColor: 'bg-eco-500',
+                },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.step} className={`rounded-xl border p-4 ${item.color} relative`}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className={`w-6 h-6 rounded-full ${item.stepColor} text-white font-bold text-xs flex items-center justify-center shrink-0`}>
+                        {item.step}
+                      </span>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${item.badgeColor}`}>
+                        {item.badge}
+                      </span>
+                    </div>
+                    <div className={`w-9 h-9 rounded-xl ${item.iconColor} flex items-center justify-center mb-3`}>
+                      <Icon className="w-4.5 h-4.5 w-[18px] h-[18px]" />
+                    </div>
+                    <p className="font-semibold text-gray-900 text-sm mb-1.5">{item.title}</p>
+                    <p className="text-gray-600 text-xs leading-relaxed">{item.desc}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-wrap gap-3">
+              {[
+                { icon: CheckCircle, text: "Code genere sur place uniquement", color: "text-eco-600" },
+                { icon: CheckCircle, text: "Expire apres 15 minutes", color: "text-eco-600" },
+                { icon: CheckCircle, text: "Horodatage a la seconde", color: "text-eco-600" },
+                { icon: CheckCircle, text: "Preuve de presence simultanee", color: "text-eco-600" },
+              ].map(({ icon: Icon, text, color }) => (
+                <div key={text} className="flex items-center gap-1.5">
+                  <Icon className={`w-3.5 h-3.5 ${color} shrink-0`} />
+                  <span className="text-xs text-gray-700 font-medium">{text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-6 space-y-6">
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6">
           <div className="flex items-start gap-4 mb-5">
             <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
